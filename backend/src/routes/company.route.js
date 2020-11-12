@@ -32,8 +32,8 @@ router.get("/all", Auth, async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const { ID } = req.params;
-    const company = await CompanyModel.findById(ID);
+    const { id } = req.params;
+    const company = await CompanyModel.findById(id);
     if (!company) {
       return res
         .status(StatusCodes.NOT_FOUND)
@@ -60,12 +60,14 @@ router.post("/register", async (req, res) => {
       email,
       password,
     });
+    /*
     sendEmail(
       "KoalaSurvey <BarmejTest@gmail.com>",
       email,
       "Welcome",
-      `Dear ${newCompany.name}, \n KoalaSurvery team wants to wish you a good luck with our services, thanks for registering with us \n Best regards, \n -Koala Survery CEO's (Waleed and Mohammad)`
+      `Dear ${name}, \n KoalaSurvery team wants to wish you a good luck with our services, thanks for registering with us \n Best regards, \n -Koala Survery CEO's (Waleed and Mohammad)`
     );
+    */
     await newCompany.save();
     return res.status(StatusCodes.CREATED).json(newCompany.tokens);
   } catch (error) {
@@ -93,12 +95,14 @@ router.post("/login", async (req, res) => {
         .status(StatusCodes.UNAUTHORIZED)
         .json({ error: "Password doesn't match" });
     }
+    /*
     sendEmail(
       "KoalaSurvey <BarmejTest@gmail.com>",
       email,
       "Welcome",
-      `Dear ${name}, \n We recognized an attempt to login if it wasn't you please reply to this email as soon as possible to reset the account's password \n Best regards, \n -Koala Survery CEO's (Waleed and Mohammad)`
+      `Dear ${company.name}, \n We recognized an attempt to login if it wasn't you please reply to this email as soon as possible to reset the account's password \n Best regards, \n -Koala Survery CEO's (Waleed and Mohammad)`
     );
+    */
     return res.status(StatusCodes.OK).json(company.tokens);
   } catch (error) {
     return res.status(StatusCodes.BAD_REQUEST).json({ error });
@@ -162,7 +166,10 @@ router.put("/edit", Auth, async (req, res) => {
   }
   if (body.name) company.name = body.name;
   if (body.email) company.email = body.email;
-  if (body.password) company.password = body.password;
+  if (body.password) {
+    company.hashed = false;
+    company.password = body.password;
+  }
   await company.save();
   return res.status(StatusCodes.OK).json({ Message: "Updated successfully" });
 });

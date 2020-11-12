@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const shortid = require("shortid");
-const HashPass = require("../utils/Crypto");
+const HashPass = require("../utils/crypto");
 const EmployeeModel = require("./employee.model");
 const jwt = require("jsonwebtoken");
 
@@ -22,6 +22,7 @@ const CompanySchema = new mongoose.Schema(
       required: true,
     },
     salt: String,
+    hashed: false,
     tokens: [
       {
         token: {
@@ -38,7 +39,10 @@ const CompanySchema = new mongoose.Schema(
 
 CompanySchema.pre("save", async function (next) {
   this.salt = shortid.generate();
-  this.password = HashPass(this.password, this.salt);
+  if (!this.hashed) {
+    this.password = HashPass(this.password, this.salt);
+    this.hashed = true;
+  }
   const token = jwt.sign({ _id: this.id }, process.env.SECRET);
   this.tokens = this.tokens.concat({ token });
   next();
